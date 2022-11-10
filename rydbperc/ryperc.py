@@ -16,7 +16,7 @@ def truncated_normal(mean=0, sd=1, low=0, upp=1):
     """
     return truncnorm((low - mean)/sd, (upp - mean)/sd, loc=mean, scale=sd)
 
-class cluster:
+class cluster3D:
     def __init__(self, size, shape=[1,1,1], distribution="uniform", MOT_radius=None) -> None:
         """ 
         defines the cluster and creates a KDTree to optimize the NN seach. The interaction volume is a cube with width equals to "width".
@@ -30,7 +30,7 @@ class cluster:
         self.size = size
         self.shape = shape
         self.distribution = distribution
-        if distribution is "gaussian": 
+        if distribution == "gaussian": 
             self.MOT_radius = MOT_radius
         self.KDT = self.get_KDT()
         pass
@@ -62,7 +62,7 @@ class cluster:
         """
         plt.figure(figsize=(13,10))
         ax = plt.axes(projection ="3d")
-        ax.scatter3D(self.KDT.data, marker="o", alpha=1, s=100)
+        ax.scatter3D(self.KDT.data[0],self.KDT.data[1],self.KDT.data[2], marker=".", alpha=1, s=100)
         #ax.set_zlim(0,N_atoms_per_row)
         #ax.set_xlim(0,N_atoms_per_row)
         #ax.set_ylim(0,N_atoms_per_row)
