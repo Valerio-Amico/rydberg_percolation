@@ -31,8 +31,13 @@ class cluster3D:
         self.shape = shape
         self.distribution = distribution
         if distribution == "gaussian": 
+            if MOT_radius == None or MOT_radius <= 0:
+                print("\"MOT_radius\" must be a positive float.")
+                raise
             self.MOT_radius = MOT_radius
         self.KDT = self.get_KDT()
+        self.R_shell = None
+        self.dR_shell = None
         pass
 
     def get_KDT(self):
@@ -54,16 +59,22 @@ class cluster3D:
         else: 
             print("distribution must be \"uniform\" or \"gaussian\".")
             raise
-        return KDTree(positions)
+        return KDTree(positions.T)
 
     def show(self):
         """
         shows the 3D cluster
         """
-        plt.figure(figsize=(13,10))
+        plt.figure(figsize=(15,12))
         ax = plt.axes(projection ="3d")
-        ax.scatter3D(self.KDT.data[0],self.KDT.data[1],self.KDT.data[2], marker=".", alpha=1, s=100)
-        #ax.set_zlim(0,N_atoms_per_row)
-        #ax.set_xlim(0,N_atoms_per_row)
-        #ax.set_ylim(0,N_atoms_per_row)
+        ax.scatter(self.KDT.data[:,0],self.KDT.data[:,1],self.KDT.data[:,2], marker=".", alpha=1, s=100)
         plt.show()
+
+    def point_connections(self, point_index):
+        """ 
+        retruns set of points (indeces) in the facilitation shell of the point with index "point_index".
+        the facilitation shell is the shell with R in [R-dR/2, R+dR/2]. 
+        """
+        big_ball = set(KDTree.query_ball_point(KDTree.data[point_index],self.R_shell+self.dR_shell/2))
+        small_ball = set(KDTree.query_ball_point(KDTree.data[point_index],self.R_shell-self.dR_shell/2))
+        return big_ball.difference(small_ball)
