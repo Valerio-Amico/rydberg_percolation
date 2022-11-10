@@ -97,6 +97,7 @@ class cluster3D:
         self.p_spont_exct = p_spont_exct
         self.p_fac = p_fac
         self.p_emission = p_emission
+        return
 
     def evolve(self, steps):
         """ 
@@ -106,18 +107,29 @@ class cluster3D:
         """
         for step in range(steps):
             ####### spontaneus excitation ###################
+                # the number of spontaneous excitation is exctracted from a poissonian, because
+                # the single excitations are indipendent events and since p<<1 and N_atoms>>N_spontaneous_exct
+                # the binomial distribution tends to a poissonian.
             N_spontaneous_exct = np.random.poisson(self.p_emission*self.size)
             self.cluster_excited = list(set(self.cluster_excited + list(np.random.choice(np.range(self.size), N_spontaneous_exct))))
-            ####### end spontaneous excitation ##############
+            ####### END spontaneous excitation ##############
             ####### facilitation excitation #################
+                # first it computes the possible points witch can be excited by facilitation,
+                # than from a binomial distribution are extracted the number of them will be excited
             facilitable_points = self.get_points_connections(self.cluster_excited)
             N_fac_exct = np.random.binomial(len(facilitable_points),self.p_fac)
-            self.cluster_excited = list(set(self.cluster_excited + list(np.random.choice(facilitable_points, N_fac_exct))))
-            ####### end facilitation excitation #############
+                # one by one the points are extracted from the facilitable_points,
+                # to be sure that the facilitation constraint in respected,
+                # if not less point will be excited.
+            for _ in range(N_fac_exct):
+                if 
+                self.cluster_excited = list(set(self.cluster_excited + list(np.random.choice(facilitable_points, 1))))
+            ####### END facilitation excitation #############
             ####### spontaneous emission ####################
             N_spontaneous_emission = np.random.binomial(len(self.cluster_excited), self.p_emission)
-             list(np.random.choice(np.range(self.size), N_spontaneous_emission))
+            list(np.random.choice(np.range(self.size), N_spontaneous_emission))
             self.cluster_excited = list(set(self.cluster_excited + )))
+            ####### END spontaneous emission ################
             
         return 
 
