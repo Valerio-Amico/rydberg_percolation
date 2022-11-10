@@ -60,4 +60,10 @@ class cluster:
         """
         shows the 3D cluster
         """
-        plt.plot3d
+        plt.figure(figsize=(13,10))
+        ax = plt.axes(projection ="3d")
+        ax.scatter3D(self.KDT.data, marker="o", alpha=1, s=100)
+        #ax.set_zlim(0,N_atoms_per_row)
+        #ax.set_xlim(0,N_atoms_per_row)
+        #ax.set_ylim(0,N_atoms_per_row)
+        plt.show()
