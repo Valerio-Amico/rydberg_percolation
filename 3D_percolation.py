@@ -5,7 +5,7 @@ from IPython.display import clear_output
 from matplotlib.animation import FuncAnimation, ArtistAnimation
 from rydbperc import ryperc
 
-N_points = 5000
+N_points = 1000
 radius_MOT = 100
 shape = [40,40,100]
 density = N_points/(shape[0]*shape[1]*shape[2]*10**-2) # atoms/cm^3
@@ -47,8 +47,8 @@ for i, p_facilitation in enumerate(p_facilitation_range):
 
         clu.evolve(steps=N_steps)
         reps.append(len(clu.cluster_excited))
-    clear_output(wait=True)
-    print("status: %d %%"%(i+1)/len(p_facilitation_range)*100)
+        
+    print("status: %d %%"%((i+1)/len(p_facilitation_range)*100))
     N_exct.append(np.mean(reps))
 
 plt.plot(p_facilitation_range, N_exct, ".")

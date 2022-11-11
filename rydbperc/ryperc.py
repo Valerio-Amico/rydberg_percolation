@@ -80,8 +80,16 @@ class cluster3D:
     
     def show2D(self):
         plt.figure(figsize=(10,10))
-        plt.plot(self.KDT.data[:,0],self.KDT.data[:,1], linestyle="", marker=".", c="b",  alpha=1)
-        plt.plot(self.KDT.data[self.cluster_excited,0],self.KDT.data[self.cluster_excited,1], linestyle="",marker="o", c="r", alpha=1)
+        ax = plt.gca()
+        ax.plot(self.KDT.data[:,0],self.KDT.data[:,1], linestyle="", marker=".", c="b",  alpha=1)
+        ax.plot(self.KDT.data[self.cluster_excited,0],self.KDT.data[self.cluster_excited,1], linestyle="",marker="o", c="r", alpha=1)
+        for index in self.cluster_excited:
+            circ = plt.Circle((self.KDT.data[index,0],self.KDT.data[index,1]), (self.R_shell - self.dR_shell/2), color='b', fill=False)
+            ax.add_patch(circ)
+            circ = plt.Circle((self.KDT.data[index,0],self.KDT.data[index,1]), (self.R_shell + self.dR_shell/2), color='b', fill=False)
+            ax.add_patch(circ)
+        lieves = self.get_points_connections(self.cluster_excited)
+        ax.plot(self.KDT.data[lieves,0], self.KDT.data[lieves,1], linestyle="", marker=".", c="lime", markersize=8,  alpha=1)
         plt.show()
         return
 
@@ -130,8 +138,13 @@ class cluster3D:
             # the single excitations are indipendent events and since p<<1 and N_atoms>>N_spontaneous_exct
             # the binomial distribution tends to a poissonian.
         N_spontaneous_exct = np.random.poisson(self.p_spont_exct*self.size)
-        self.cluster_excited = list(set(self.cluster_excited + list(np.random.choice(np.arange(self.size), N_spontaneous_exct))))
+        they_want_be_excited = list(np.random.choice(np.arange(self.size), N_spontaneous_exct))
+            # checks the facilitation contraint, and excites only who respects it
+        for he_want_be_excited in they_want_be_excited:
+            if self.common_member(self.KDT.query_ball_point(self.KDT.data[he_want_be_excited], self.R_shell - self.dR_shell), self.cluster_excited):
+                self.cluster_excited = self.cluster_excited + [he_want_be_excited]
         ####### END spontaneous excitation ##############
+
         ####### facilitation excitation #################
             # first it computes the possible points witch can be excited by facilitation,
             # than from a binomial distribution are extracted the number of them will be excited
@@ -143,10 +156,11 @@ class cluster3D:
                 # if not less point will be excited.
             if N_fac_exct>0:
                 self.cluster_excited = self.cluster_excited + [facilitable_points[0]]
-                for facilitable_point_index in range(1, N_fac_exct):
-                    if facilitable_points[facilitable_point_index] not in self.KDT.query_ball_point(self.KDT.data[facilitable_points[0:facilitable_point_index]], self.R_shell-self.dR_shell/2):
-                        self.cluster_excited = list(set(self.cluster_excited + [facilitable_points[facilitable_point_index]]))
+                for facilitable_point in facilitable_points[1:N_fac_exct]:
+                    if self.common_member(self.KDT.query_ball_point(self.KDT.data[facilitable_point], self.R_shell - self.dR_shell), self.cluster_excited):
+                        self.cluster_excited = self.cluster_excited + [facilitable_point]
         ####### END facilitation excitation #############
+
         ####### spontaneous emission ####################
         N_spontaneous_emission = np.random.binomial(len(self.cluster_excited), self.p_emission)
         spontaneous_emissions = list(np.random.choice(self.cluster_excited, N_spontaneous_emission, replace=False))
@@ -154,3 +168,12 @@ class cluster3D:
         ####### END spontaneous emission ################
         return 
 
+    def common_member(self, a, b):
+        """ 
+        check if two lists (a, b) has no elements in common
+        """
+        a_set = set(a)
+        b_set = set(b)
+        if len(a_set.intersection(b_set)) > 0:
+            return False
+        return True
