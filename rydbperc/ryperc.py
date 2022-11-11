@@ -122,14 +122,21 @@ class cluster3D:
         self.p_emission = p_emission
         return
 
-    def evolve(self, steps):
+    def evolve(self, steps, excitation_steps=None):
         """ 
         evolves the system
         args:
             steps (int): evolution steps
+            excitation_steps (int): number of steps (from the start) in witch the sponaneous excitation are possible
         """
-        for _ in range(steps):
+        if excitation_steps is None:
+            excitation_steps = steps
+        p_spont_exct_aus = self.p_spont_exct
+        for i in range(steps):
+            if i == excitation_steps:
+                self.p_spont_exct = 0
             self.evolution_step()
+        self.p_spont_exct = p_spont_exct_aus
         return
     
     def evolution_step(self):
