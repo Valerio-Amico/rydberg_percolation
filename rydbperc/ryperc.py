@@ -68,11 +68,22 @@ class cluster3D:
         """
         shows the 3D cluster
         """
+        if self.is_2D == True:
+            self.show2D()
+            return
         plt.figure(figsize=(15,12))
         ax = plt.axes(projection ="3d")
-        ax.scatter(self.KDT.data[:,0],self.KDT.data[:,1],self.KDT.data[:,2], marker=".", c="b",  alpha=1, s=100)
-        ax.scatter(self.KDT.data[self.cluster_excited,0],self.KDT.data[self.cluster_excited,1],self.KDT.data[self.cluster_excited,2], marker="o", c="r", alpha=1, s=100)
+        ax.scatter(self.KDT.data[:,0],self.KDT.data[:,1],self.KDT.data[:,2], marker=".", c="b",  alpha=1, s=10)
+        ax.scatter(self.KDT.data[self.cluster_excited,0],self.KDT.data[self.cluster_excited,1],self.KDT.data[self.cluster_excited,2], marker=".", c="r", alpha=1, s=100)
         plt.show()
+        return
+    
+    def show2D(self):
+        plt.figure(figsize=(10,10))
+        plt.plot(self.KDT.data[:,0],self.KDT.data[:,1], linestyle="", marker=".", c="b",  alpha=1)
+        plt.plot(self.KDT.data[self.cluster_excited,0],self.KDT.data[self.cluster_excited,1], linestyle="",marker="o", c="r", alpha=1)
+        plt.show()
+        return
 
     def get_points_connections(self, point_indeces):
         """ 
