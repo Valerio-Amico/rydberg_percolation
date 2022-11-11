@@ -77,9 +77,9 @@ class cluster3D:
         retruns set of points (indeces) in the facilitation shell of the point with index "point_index".
         the facilitation shell is the shell with R in [R-dR/2, R+dR/2]. 
         """
-        big_ball = set(KDTree.query_ball_point(KDTree.data[point_indeces],self.R_shell+self.dR_shell/2))
-        small_ball = set(KDTree.query_ball_point(KDTree.data[point_indeces],self.R_shell-self.dR_shell/2))
-        return big_ball.difference(small_ball)
+        big_ball = set(self.KDT.query_ball_point(self.KDT.data[point_indeces],self.R_shell+self.dR_shell/2))
+        small_ball = set(self.KDT.query_ball_point(self.KDT.data[point_indeces],self.R_shell-self.dR_shell/2))
+        return list(big_ball.difference(small_ball))
     
     def set_evolution_parameters(self, shell_radius, shell_delta, p_spont_exct, p_fac, p_emission):
         """ 
@@ -105,31 +105,39 @@ class cluster3D:
         args:
             steps (int): evolution steps
         """
-        for step in range(steps):
-            ####### spontaneus excitation ###################
-                # the number of spontaneous excitation is exctracted from a poissonian, because
-                # the single excitations are indipendent events and since p<<1 and N_atoms>>N_spontaneous_exct
-                # the binomial distribution tends to a poissonian.
-            N_spontaneous_exct = np.random.poisson(self.p_emission*self.size)
-            self.cluster_excited = list(set(self.cluster_excited + list(np.random.choice(np.range(self.size), N_spontaneous_exct))))
-            ####### END spontaneous excitation ##############
-            ####### facilitation excitation #################
-                # first it computes the possible points witch can be excited by facilitation,
-                # than from a binomial distribution are extracted the number of them will be excited
-            facilitable_points = self.get_points_connections(self.cluster_excited)
+        for _ in range(steps):
+            self.evolution_step()
+        return
+    
+    def evolution_step(self):
+        ####### spontaneus excitation ###################
+            # the number of spontaneous excitation is exctracted from a poissonian, because
+            # the single excitations are indipendent events and since p<<1 and N_atoms>>N_spontaneous_exct
+            # the binomial distribution tends to a poissonian.
+        N_spontaneous_exct = np.random.poisson(self.p_emission*self.size)
+        self.cluster_excited = list(set(self.cluster_excited + list(np.random.choice(np.range(self.size), N_spontaneous_exct))))
+        ####### END spontaneous excitation ##############
+        ####### facilitation excitation #################
+            # first it computes the possible points witch can be excited by facilitation,
+            # than from a binomial distribution are extracted the number of them will be excited
+        facilitable_points = self.get_points_connections(self.cluster_excited)
+        if len(facilitable_points) != 0:
             N_fac_exct = np.random.binomial(len(facilitable_points),self.p_fac)
                 # one by one the points are extracted from the facilitable_points,
                 # to be sure that the facilitation constraint in respected,
                 # if not less point will be excited.
-            for _ in range(N_fac_exct):
-                if 
-                self.cluster_excited = list(set(self.cluster_excited + list(np.random.choice(facilitable_points, 1))))
-            ####### END facilitation excitation #############
-            ####### spontaneous emission ####################
-            N_spontaneous_emission = np.random.binomial(len(self.cluster_excited), self.p_emission)
-            list(np.random.choice(np.range(self.size), N_spontaneous_emission))
-            self.cluster_excited = list(set(self.cluster_excited + )))
-            ####### END spontaneous emission ################
-            
+            if N_fac_exct>0:
+                self.cluster_excited = self.cluster_excited + list(facilitable_points[0])
+                facilitable_points.remove(facilitable_points[0])
+                for facilitable_point_index in range(1, N_fac_exct):
+                    if facilitable_points[facilitable_point_index] not in self.KDT.query_ball_point(self.KDT.data[facilitable_points[0:facilitable_point_index]], self.R_shell-self.dR_shell/2):
+                        new_excitations = new_excitations + facilitable_points[facilitable_point_index]
+                        self.cluster_excited = list(set(self.cluster_excited + list(facilitable_points[facilitable_point_index])))
+        ####### END facilitation excitation #############
+        ####### spontaneous emission ####################
+        N_spontaneous_emission = np.random.binomial(len(self.cluster_excited), self.p_emission)
+        spontaneous_emissions = list(np.random.choice(self.cluster_excited, N_spontaneous_emission, replace=False))
+        self.cluster_excited = list(set(self.cluster_excited).difference(set(spontaneous_emissions)))
+        ####### END spontaneous emission ################
         return 
 
