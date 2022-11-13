@@ -20,13 +20,19 @@ def truncated_normal(mean=0, sd=1, low=0, upp=1):
 class cluster3D:
     def __init__(self, size, shape=[1,1,1], distribution="uniform", MOT_radius=None, is_2D = False) -> None:
         """ 
-        defines the cluster and creates a KDTree to optimize the NN seach. The interaction volume is a cube with width equals to "width".
+        defines the cluster and creates a KDTree to optimize the NN seach. The interaction volume has shape "shape".
         args:
             size (int): number of points (or atoms) in the cloud.
             distribution (string): "uniform" or "gaussian", is the sample distribution.
             shape ([float,float,float]): is the shape of the interaction volume the the 3 coordinates.
             MOT_radius (float): if distribution is "gaussian" the radius is the standard deviation of the distribution.
-            is_2D (bool): if True a 2D cluster is created 
+            is_2D (bool): if True a 2D cluster is created (i.e. the z-axis in a np.zeros(size))
+        
+        #################
+        Memory organization
+            KD-Tree is used to optimize the seach in the cluster.
+            the data are stored in a matrix with shape [3,size], the first index refers to x,y,z.
+            the excited atoms are stored in a list (cluster_excited).
         """
         self.size = size
         self.shape = shape
