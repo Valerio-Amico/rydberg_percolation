@@ -154,7 +154,7 @@ class cluster3D:
         they_want_be_excited = list(np.random.choice(np.arange(self.size), N_spontaneous_exct))
             # checks the facilitation contraint, and excites only who respects it
         for he_want_be_excited in they_want_be_excited:
-            if self.common_member(self.KDT.query_ball_point(self.KDT.data[he_want_be_excited], self.R_shell - self.dR_shell), self.cluster_excited):
+            if common_member(self.KDT.query_ball_point(self.KDT.data[he_want_be_excited], self.R_shell - self.dR_shell), self.cluster_excited):
                 self.cluster_excited = self.cluster_excited + [he_want_be_excited]
         ####### END spontaneous excitation ##############
 
@@ -170,7 +170,7 @@ class cluster3D:
             if N_fac_exct>0:
                 self.cluster_excited = self.cluster_excited + [facilitable_points[0]]
                 for facilitable_point in facilitable_points[1:N_fac_exct]:
-                    if self.common_member(self.KDT.query_ball_point(self.KDT.data[facilitable_point], self.R_shell - self.dR_shell), self.cluster_excited):
+                    if common_member(self.KDT.query_ball_point(self.KDT.data[facilitable_point], self.R_shell - self.dR_shell), self.cluster_excited):
                         self.cluster_excited = self.cluster_excited + [facilitable_point]
         ####### END facilitation excitation #############
 
@@ -181,12 +181,12 @@ class cluster3D:
         ####### END spontaneous emission ################
         return 
 
-    def common_member(self, a, b):
-        """ 
-        check if two lists (a, b) has no elements in common
-        """
-        a_set = set(a)
-        b_set = set(b)
-        if len(a_set.intersection(b_set)) > 0:
-            return False
-        return True
+def common_member(a, b):
+    """ 
+    check if two lists (a, b) has no elements in common
+    """
+    a_set = set(a)
+    b_set = set(b)
+    if len(a_set.intersection(b_set)) > 0:
+        return False
+    return True
