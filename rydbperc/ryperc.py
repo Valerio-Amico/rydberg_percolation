@@ -138,12 +138,14 @@ class cluster3D:
         if excitation_steps is None:
             excitation_steps = steps
         p_spont_exct_aus = self.p_spont_exct
+        evolution = np.zeros(steps)
         for i in range(steps):
             if i == excitation_steps:
                 self.p_spont_exct = 0
             self.evolution_step()
+            evolution[i] = len(self.cluster_excited)
         self.p_spont_exct = p_spont_exct_aus
-        return
+        return evolution
     
     def evolution_step(self):
         ####### spontaneus excitation ###################
