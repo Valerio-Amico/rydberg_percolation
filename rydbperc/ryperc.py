@@ -110,7 +110,7 @@ class cluster3D:
         small_ball = set(list(np.concatenate(self.KDT.query_ball_point(self.KDT.data[point_indeces],self.R_shell-self.dR_shell/2)).flat))
         return list(big_ball.difference(small_ball))
     
-    def set_evolution_parameters(self, shell_radius, shell_delta, p_spont_exct, p_fac, p_emission):
+    def set_evolution_parameters(self, shell_radius, shell_delta, blokade_radius, p_spont_exct, p_fac, p_emission):
         """ 
         args:
             shell_radius (float): radius of the facilitation shell
@@ -123,6 +123,7 @@ class cluster3D:
         """
         self.R_shell = shell_radius
         self.dR_shell = shell_delta
+        self.blokade_radius = blokade_radius
         self.p_spont_exct = p_spont_exct
         self.p_fac = p_fac
         self.p_emission = p_emission
@@ -135,17 +136,20 @@ class cluster3D:
             steps (int): evolution steps
             excitation_steps (int): number of steps (from the start) in witch the sponaneous excitation are possible
         """
+        self.facilitated_points_counts = 0
         if excitation_steps is None:
             excitation_steps = steps
         p_spont_exct_aus = self.p_spont_exct
         evolution = np.zeros(steps)
+        facilitated_points = np.zeros(steps)
         for i in range(steps):
             if i == excitation_steps:
                 self.p_spont_exct = 0
             self.evolution_step()
             evolution[i] = len(self.cluster_excited)
+            facilitated_points[i] = self.facilitated_points_counts
         self.p_spont_exct = p_spont_exct_aus
-        return evolution
+        return evolution, facilitated_points
     
     def evolution_step(self):
         ####### spontaneus excitation ###################
@@ -156,7 +160,7 @@ class cluster3D:
         they_want_be_excited = list(np.random.choice(np.arange(self.size), N_spontaneous_exct))
             # checks the facilitation contraint, and excites only who respects it
         for he_want_be_excited in they_want_be_excited:
-            if common_member(self.KDT.query_ball_point(self.KDT.data[he_want_be_excited], self.R_shell - self.dR_shell), self.cluster_excited):
+            if common_member(self.KDT.query_ball_point(self.KDT.data[he_want_be_excited], self.blokade_radius), self.cluster_excited):
                 self.cluster_excited = self.cluster_excited + [he_want_be_excited]
         ####### END spontaneous excitation ##############
 
@@ -164,6 +168,8 @@ class cluster3D:
             # first it computes the possible points witch can be excited by facilitation,
             # than from a binomial distribution are extracted the number of them will be excited
         facilitable_points = self.get_points_connections(self.cluster_excited)
+   
+        self.facilitated_points_counts = 0
         if len(facilitable_points) != 0:
             N_fac_exct = np.random.binomial(len(facilitable_points),self.p_fac)
                 # one by one the points are extracted from the facilitable_points,
@@ -174,6 +180,7 @@ class cluster3D:
                 for facilitable_point in facilitable_points[1:N_fac_exct]:
                     if common_member(self.KDT.query_ball_point(self.KDT.data[facilitable_point], self.R_shell - self.dR_shell), self.cluster_excited):
                         self.cluster_excited = self.cluster_excited + [facilitable_point]
+                        self.facilitated_points_counts += 1
         ####### END facilitation excitation #############
 
         ####### spontaneous emission ####################
