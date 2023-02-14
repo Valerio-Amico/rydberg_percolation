@@ -92,7 +92,9 @@ class cluster3D:
         plt.figure(figsize=(15,12))
         ax = plt.axes(projection ="3d")
         ax.scatter(self.KDT.data[:,0],self.KDT.data[:,1],self.KDT.data[:,2], marker=".", c="b",  alpha=1, s=10)
-        ax.scatter(self.KDT.data[self.cluster_excited,0],self.KDT.data[self.cluster_excited,1],self.KDT.data[self.cluster_excited,2], marker=".", c="r", alpha=1, s=100)
+        self.cluster_excited = list(self.cluster_excited)
+        if len(self.cluster_excited)>0:
+            ax.scatter(self.KDT.data[self.cluster_excited,0],self.KDT.data[self.cluster_excited,1],self.KDT.data[self.cluster_excited,2], marker=".", c="r", alpha=1, s=100)
         plt.show()
         return
     
@@ -195,9 +197,10 @@ class cluster3D:
             # the binomial distribution tends to a poissonian.
         N_spontaneous_exct = np.random.poisson(self.p_spont_exct*len(self.external_points))
         for _ in range(N_spontaneous_exct):
-            he_want_be_excited = np.random.choice(list(self.external_points))
-            # checks the blockade contraint, and excites only who respects it
-            self.excite_atom(he_want_be_excited)
+            if len(list(self.external_points)) > 0:
+                he_want_be_excited = np.random.choice(list(self.external_points))
+                # checks the blockade contraint, and excites only who respects it
+                self.excite_atom(he_want_be_excited)
 
         ####### END spontaneous excitation ##############
 
