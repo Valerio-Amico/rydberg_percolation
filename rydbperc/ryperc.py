@@ -70,34 +70,56 @@ class cluster3D:
             raise
         return KDTree(positions.T)
 
-    def show(self):
+    def show(self, size=None, return_=False):
         """
         shows the 3D cluster
         """
         if self.is_2D == True:
-            self.show2D()
+            self.show2D(size=size, return_=return_)
             return
-        plt.figure(figsize=(15,12))
+        if size == None:
+            plt.figure(figsize=(15,12))
+        else:
+            plt.figure(figsize=size)
         ax = plt.axes(projection ="3d")
         ax.scatter(self.KDT.data[:,0],self.KDT.data[:,1],self.KDT.data[:,2], marker=".", c="b",  alpha=1, s=10)
         ax.scatter(self.KDT.data[self.cluster_excited,0],self.KDT.data[self.cluster_excited,1],self.KDT.data[self.cluster_excited,2], marker=".", c="r", alpha=1, s=100)
-        plt.show()
-        return
+        if return_ == False:
+            plt.show()
+            return
+        else:
+            return ax
     
-    def show2D(self):
-        plt.figure(figsize=(10,10))
-        ax = plt.gca()
-        ax.plot(self.KDT.data[:,0],self.KDT.data[:,1], linestyle="", marker=".", c="b",  alpha=1)
-        ax.plot(self.KDT.data[self.cluster_excited,0],self.KDT.data[self.cluster_excited,1], linestyle="",marker="o", c="r", alpha=1)
+    def show2D(self, return_=None):
+        
+        ims = []
+        ax1 = plt.subplot(1,1,1)
+        #from matplotlib.transforms import Bbox
+        #ax1.set_position(Bbox([[0.3,0.1],[0.7,0.5]]))
+
+        ax1.set_xlim([-0.6,0.6])
+        ax1.set_ylim([-0.6,0.6])
+
+        ims += ax1.plot(self.KDT.data[:,0],self.KDT.data[:,1], linestyle="", marker=".",markersize=3, c="b",  alpha=1)
+        ims += ax1.plot(self.KDT.data[self.cluster_excited,0],self.KDT.data[self.cluster_excited,1], linestyle="",marker="o",markersize=8, c="r", alpha=1)
         for index in self.cluster_excited:
-            circ = plt.Circle((self.KDT.data[index,0],self.KDT.data[index,1]), (self.R_shell - self.dR_shell/2), color='b', fill=False)
-            ax.add_patch(circ)
-            circ = plt.Circle((self.KDT.data[index,0],self.KDT.data[index,1]), (self.R_shell + self.dR_shell/2), color='b', fill=False)
-            ax.add_patch(circ)
+            c_ = 130/228
+            circ = plt.Circle((self.KDT.data[index,0],self.KDT.data[index,1]), (self.R_shell + self.dR_shell/2), color=(c_,c_,c_), fill=True, lw=0)
+            ims += [ax1.add_patch(circ)]
+        for index in self.cluster_excited:
+            c_ = 200/228
+            circ = plt.Circle((self.KDT.data[index,0],self.KDT.data[index,1]), (self.R_shell - self.dR_shell/2), color=(c_,c_,c_), lw=0, fill=True, alpha=1)
+            ims += [ax1.add_patch(circ)]
+
+            
+            
         lieves = self.get_points_connections(self.cluster_excited)
-        ax.plot(self.KDT.data[lieves,0], self.KDT.data[lieves,1], linestyle="", marker=".", c="lime", markersize=8,  alpha=1)
-        plt.show()
-        return
+        ims += ax1.plot(self.KDT.data[lieves,0], self.KDT.data[lieves,1], linestyle="", marker=".", c="black", mec = 'lime', markersize=8,  alpha=1)
+        if return_ == False:
+            plt.show()
+            return
+        else:
+            return ims
 
     def get_points_connections(self, point_indeces):
         """ 
